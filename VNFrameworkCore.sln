@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VNFrameworkCore", "VNFrameworkCore\VNFrameworkCore.csproj", "{317B5941-AAA9-418C-8EEC-F68E4050BC96}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VNFrameworkCore.Test", "VNFrameworkCore.Test\VNFrameworkCore.Test.csproj", "{BE285FFB-D397-4416-A019-14680E946004}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{317B5941-AAA9-418C-8EEC-F68E4050BC96}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{317B5941-AAA9-418C-8EEC-F68E4050BC96}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{317B5941-AAA9-418C-8EEC-F68E4050BC96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE285FFB-D397-4416-A019-14680E946004}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE285FFB-D397-4416-A019-14680E946004}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE285FFB-D397-4416-A019-14680E946004}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE285FFB-D397-4416-A019-14680E946004}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
