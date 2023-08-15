@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VNFrameworkCore", "VNFramew
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VNFrameworkCore.Test", "VNFrameworkCore.Test\VNFrameworkCore.Test.csproj", "{BE285FFB-D397-4416-A019-14680E946004}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VNFrameworkCoreCLI", "VNFrameworkCoreCLI\VNFrameworkCoreCLI.csproj", "{DDC3CA39-0A1E-4B32-B16C-77BD14404DE5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{BE285FFB-D397-4416-A019-14680E946004}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE285FFB-D397-4416-A019-14680E946004}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BE285FFB-D397-4416-A019-14680E946004}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDC3CA39-0A1E-4B32-B16C-77BD14404DE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDC3CA39-0A1E-4B32-B16C-77BD14404DE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDC3CA39-0A1E-4B32-B16C-77BD14404DE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDC3CA39-0A1E-4B32-B16C-77BD14404DE5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
