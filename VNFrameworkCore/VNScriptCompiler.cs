@@ -29,7 +29,7 @@ namespace VNFramework.Core
         public List<VNScriptAsm> NextAsmList()
         {
             var ilList = ParseVNScriptLineToIL(_vnScriptLines[_scriptIndex]);
-            var asmList = ParseILLinesToAsm(ilList);
+            var asmList = ParseILToAsm(ilList);
 
             if (_scriptIndex < _vnScriptLen) _scriptIndex++;
 
@@ -121,7 +121,7 @@ namespace VNFramework.Core
         bool lastTypeIsClearDialogue = false;
         bool isFullDialogueMode = false;
         bool isNotInitDialogueMode = true;
-        public List<VNScriptIL> ParseVNScriptLineToIL(string line)
+        private List<VNScriptIL> ParseVNScriptLineToIL(string line)
         {
             var ilList = new List<VNScriptIL>();
             line = line.Trim();
@@ -170,6 +170,18 @@ namespace VNFramework.Core
                 ilList.AddRange(ParseVNScriptDialogueSyntax(line));
                 isFullDialogueMode = false;
                 lastTypeIsClearDialogue = false;
+            }
+
+            return ilList;
+        }
+
+        public static List<VNScriptIL> ParseVNScriptToIL(string[] lines)
+        {
+            var ilList = new List<VNScriptIL>();
+            var compiler = new VNScriptCompiler(lines);
+            foreach (var line in lines)
+            {
+                ilList.AddRange(compiler.ParseVNScriptLineToIL(line));
             }
 
             return ilList;
@@ -264,7 +276,7 @@ namespace VNFramework.Core
 
         #region IL
 
-        public static List<VNScriptAsm> ParseILLinesToAsm(List<VNScriptIL> ilList)
+        public static List<VNScriptAsm> ParseILToAsm(List<VNScriptIL> ilList)
         {
             var asmList = new List<VNScriptAsm>();
 
