@@ -39,6 +39,11 @@ namespace VNFramework
             CommandName = commandName;
             Parameters = parameters;
         }
+
+        public override string ToString()
+        {
+            return $"[ {CommandName} : {string.Join(", ", Parameters)} ]";
+        }
     }
 
     public class VNScriptAsm
