@@ -7,9 +7,9 @@ public class VNMermaidTest
     [Theory]
     [InlineData("Mermaid节点[章节名称]", "Mermaid节点", "章节名称")]
     [InlineData("   Mermaid节点   [  章节名称  ]", "Mermaid节点", "章节名称")]
-    public void ExtractDefineText_ValidInput_Success(string input, string nodeName, string chapterName)
+    public void ExtractDefineNode_ValidInput_Success(string input, string nodeName, string chapterName)
     {
-        var result = Mermaid.ExtractDefineText(input);
+        var result = Mermaid.ExtractDefineNode(input);
 
         Assert.Equal(nodeName, result.nodeName);
         Assert.Equal(chapterName, result.chapterName);
@@ -18,35 +18,36 @@ public class VNMermaidTest
     [Theory]
     [InlineData("Mermaid节点[]")]
     [InlineData("[章节名称]")]
+    [InlineData("[]")]
     [InlineData("")]
     public void ExtractDefineText_InvalidInput_ThrowsArgumentException(string input)
     {
-        Assert.Throws<ArgumentException>(() => Mermaid.ExtractDefineText(input));
+        Assert.Throws<ArgumentException>(() => Mermaid.ExtractDefineNode(input));
     }
 
     [Theory]
-    [InlineData("节点1 --> to节点1(选项文本1)", "节点1", "to节点1", "选项文本1")]
-    [InlineData("节点2 --> to节点2(选项文本2)", "节点2", "to节点2", "选项文本2")]
-    [InlineData("节点3 --> to节点3(选项文本3)", "节点3", "to节点3", "选项文本3")]
-    [InlineData("from节点 --> to节点(选项文本)", "from节点", "to节点", "选项文本")]
-    [InlineData("SingleLineNode --> SingleLineToNode(SingleLineOptionText)", "SingleLineNode", "SingleLineToNode", "SingleLineOptionText")]
-    [InlineData("  LeadingSpaces  -->  TrailingSpaces  (  SpacesInOptionText  )  ", "LeadingSpaces", "TrailingSpaces", "SpacesInOptionText")]
-    public void ExtractLinkText_ValidInput_Success(string input, string fromNode, string toNode, string optionText)
+    [InlineData("Node A -->|Option| Node B", "Node A", "Node B", "Option")]
+    [InlineData(" Node A --> | Option | Node B ", "Node A", "Node B", "Option")]
+    [InlineData("Node A --> Node B", "Node A", "Node B", "")]
+    public void ExtractLinkNode_ValidInput_Success(string linkLine, string fromNode, string toNode, string optionText)
     {
-        var result = Mermaid.ExtractLinkText(input);
+        var unit = Mermaid.ExtractLinkNode(linkLine);
 
-        Assert.Equal(fromNode, result.fromNode);
-        Assert.Equal(toNode, result.toNode);
-        Assert.Equal(optionText, result.optionText);
+        Assert.Equal(fromNode, unit.fromNode);
+        Assert.Equal(toNode, unit.toNode);
+        Assert.Equal(optionText, unit.optionText);
     }
 
     [Theory]
-    [InlineData("节点1 --> (选项文本)")]
-    [InlineData("--> 节点2(选项文本)")]
-    [InlineData("InvalidFormat")]
-    public void ExtractLinkText_InvalidInput_ThrowsArgumentException(string input)
+    [InlineData("Invalid Link Node Format")]
+    [InlineData("Node A -- Node B")]
+    [InlineData("Node A --> ")]
+    [InlineData("Node A -->|Option|")]
+    [InlineData(" --> Node B")]
+    [InlineData(" -->|Option| Node B")]
+    public void ExtractLinkNode_InvalidInput_ThrowsArgumentException(string input)
     {
-        Assert.Throws<ArgumentException>(() => Mermaid.ExtractLinkText(input));
+        Assert.Throws<ArgumentException>(() => Mermaid.ExtractLinkNode(input));
     }
 
     [Theory]
@@ -168,32 +169,28 @@ public class VNMermaidTest
     }
 
     [Fact]
-    public void ExtraMermaidTagText_WithValidMermaidText_ParsesSuccessfully()
+    public void ExtraMermaidText_WithValidMermaidText_ParsesSuccessfully()
     {
         // Arrange
-        string mermaidText = @"
-# 这里是定义
-[Define]
-Node1[Chapter1]
-Node2[Chapter2]
-Node3[Chapter3]
+        string mermaidText = """
+            # 这里是定义
+            Node1[Chapter1]
+            Node2[Chapter2]
+            Node3[Chapter3]
 
-# 这里是链接
-[Link]
-Node1 --> Node2 (OptionText1to2)
-Node1 --> Node3 (OptionText1to3)
-Node3 --> Node2 (OptionText3to2)
+            # 这里是链接
+            Node1 -->|OptionText1to2| Node2
+            Node1 -->|OptionText1to3| Node3
+            Node3 -->|OptionText3to2| Node2
+            Node3 --> Node4
 
-# 这里是第二部分定义
-[Define]
-Node4[Chapter4]
-Node5[Chapter5]
-Node6[Chapter6]
+            # 这里是第二部分定义
+            Node4[Chapter4]
+            Node5[Chapter5]
+            Node6[Chapter6]
+            """;
 
-";
-        // Act
-        var defineLines = Mermaid.ExtractMermaidTagText(mermaidText, MermaidTag.Define);
-        var linkLines = Mermaid.ExtractMermaidTagText(mermaidText, MermaidTag.Link);
+        var (defineLines, linkLines) = Mermaid.ExtractMermaidText(mermaidText.Split(Environment.NewLine));
 
         // Assert
         var expectedDefineLines = new List<string>
@@ -201,7 +198,6 @@ Node6[Chapter6]
             "Node1[Chapter1]",
             "Node2[Chapter2]",
             "Node3[Chapter3]",
-
             "Node4[Chapter4]",
             "Node5[Chapter5]",
             "Node6[Chapter6]"
@@ -209,9 +205,10 @@ Node6[Chapter6]
 
         var expectedLinkLines = new List<string>
         {
-            "Node1 --> Node2 (OptionText1to2)",
-            "Node1 --> Node3 (OptionText1to3)",
-            "Node3 --> Node2 (OptionText3to2)"
+            "Node1 -->|OptionText1to2| Node2",
+            "Node1 -->|OptionText1to3| Node3",
+            "Node3 -->|OptionText3to2| Node2",
+            "Node3 --> Node4"
         };
 
         Assert.Equal(expectedDefineLines, defineLines);
@@ -223,19 +220,19 @@ Node6[Chapter6]
     {
         // Arrange
         var mermaid = new Mermaid();
-        string mermaidText = @"
-[Define]
-Node1[Chapter1]
-Node2[Chapter2]
-Node3[Chapter3]
+        string mermaidText =
+            """
+            Node1[Chapter1]
+            Node2[Chapter2]
+            Node3[Chapter3]
 
-[Link]
-Node1 --> Node2 (OptionText1to2)
-Node1 --> Node3 (OptionText1to3)
-Node3 --> Node2 (OptionText3to2)";
+            Node1 -->|OptionText1to2| Node2
+            Node1 -->|OptionText1to3| Node3
+            Node3 -->|OptionText3to2| Node2
+            """;
 
         // Act
-        mermaid.ParseVNMermaid(mermaidText);
+        mermaid.ParseVNMermaid(mermaidText.Split(Environment.NewLine));
         var mermaidMap = mermaid.GetMermaidMap();
 
         // Assert

@@ -1,116 +1,13 @@
 ﻿using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System;
-using System.Linq;
 
 namespace VNFramework.Core
 {
-    public enum MermaidTag
-    {
-        Define,
-        Link
-    }
-
-    public class MermaidNode
-    {
-        public string NodeName;
-        public string ChapterName;
-
-        public List<(MermaidNode node, string optionText)> Children;
-
-        public MermaidNode(string nodeName, string chapterName)
-        {
-            NodeName = nodeName;
-            ChapterName = chapterName;
-            Children = new();
-        }
-
-        public List<(string childName, string optionText)> GetChildren()
-        {
-            var list = new List<(string childName, string optionText)>();
-
-            foreach (var child in Children)
-            {
-                list.Add((child.node.NodeName, child.optionText));
-            }
-
-            return list;
-        }
-
-        public void AddLinkedNode(MermaidNode node, string optionText)
-        {
-            Children.Add((node: node, optionText: optionText));
-        }
-
-        public MermaidNode? GetMermaidNode(string nodeName)
-        {
-            if (NodeName == nodeName) return this;
-
-            foreach (var child in Children)
-            {
-                var result = child.node.GetMermaidNode(nodeName);
-
-                if (result != null) return result;
-            }
-
-            return null;
-        }
-
-        public static MermaidNode? GetMermaidNode(MermaidNode parentNode, string nodeName)
-        {
-            if (parentNode.NodeName == nodeName) return parentNode;
-
-            var result = parentNode.GetMermaidNode(nodeName);
-            if (result != null) return result;
-
-            return null;
-        }
-
-        public static MermaidNode? GetMermaidNode(List<MermaidNode> parentNode, string nodeName)
-        {
-            foreach (var node in parentNode)
-            {
-                var result = node.GetMermaidNode(nodeName);
-                if (result != null) return result;
-            }
-
-            return null;
-        }
-
-        public string[] GetNodePaths()
-        {
-            List<string> paths = new List<string>();
-            GenerateNodePath(this, "", paths);
-            return paths.ToArray();
-        }
-
-        private void GenerateNodePath(MermaidNode node, string path, List<string> paths)
-        {
-            // 使用深度优先算法输出路径
-            path = path + node.NodeName;
-
-            if (node.Children.Count == 0)
-            {
-                // 已经到达叶子节点，保存路径
-                paths.Add(path.TrimEnd(' ', '-'));
-            }
-            else
-            {
-                path += " -> ";
-                // 继续遍历子节点
-                foreach (var child in node.Children)
-                {
-                    GenerateNodePath(child.node, path, paths);
-                }
-            }
-        }
-    }
-
     public class Mermaid
     {
-        // 先为 VNMermaid 添加所有被定义的 Mermaid Node
-        // 然后使用 LinkGhostNode 为节点添加连接
-        // 最后导出 Mermaid Map
+        private static readonly Regex defineRegex = new(@"^\s*(.*?)\s*\[\s*(.*?)\s*\]\s*$", RegexOptions.Singleline);
+        private static readonly Regex linkRegex = new(@"^\s*(.*?)\s*-->\s*(\|\s*(.*?)\s*\|)?\s*(.*?)\s*$", RegexOptions.Singleline);
 
         public List<MermaidNode> mermaidNodes;
         private List<(string nodeName, string chapterName)> ghostNodes;
@@ -156,7 +53,7 @@ namespace VNFramework.Core
             if (fromNode == null)
             {
                 // 若 mermaidNotes 中不存在 fromNode 节点，则尝试从 ghost中创建
-                // 使用 ghostNotes 中的数据创建出 fromNode 节点后，将 fromNode 添加进 mermaidNotes中
+                // 使用 ghostNotes 中的数据创建出 fromNode 节点后，将 fromNode 添加进 mermaidNodes 中
                 // fromNode 添加进 mermaidNotes 后，从 ghostNodes 中移除 fromNode 的数据
                 var index = GetGhostNodeIndex(from);
                 if (index == -1) throw new ArgumentException($"fromNode 「{from}」 not found");
@@ -230,90 +127,102 @@ namespace VNFramework.Core
         /// 解析符合 VNMermaid 语法规范的字符串
         /// </summary>
         /// <param name="mermaidLines"></param>
-        public void ParseVNMermaid(string mermaidText)
+        public void ParseVNMermaid(string[] mermaidText)
         {
-            var definedLines = ExtractMermaidTagText(mermaidText, MermaidTag.Define);
-            var linkLines = ExtractMermaidTagText(mermaidText, MermaidTag.Link);
+            // 分别提取出所有的定义和链接字符串
+            // 解析所有定义后，再进行字符串链接
+
+            var (definedLines, linkLines) = ExtractMermaidText(mermaidText);
 
             // Define 语法
-            // Mermaid节点名称[章节名称]
             foreach (var line in definedLines)
             {
-                var unit = ExtractDefineText(line);
-                AddGhostNode(unit.nodeName, unit.chapterName);
+                var (nodeName, chapterName) = ExtractDefineNode(line);
+                AddGhostNode(nodeName, chapterName);
             }
 
             // Link 语法
-            // from 节点 --> to 节点 (选项文本)
-            // 若不存在选项文本，则演出时不弹出任何选项
             foreach (var line in linkLines)
             {
-                var unit = ExtractLinkText(line);
-                LinkMermaidNode(unit.fromNode, unit.toNode, unit.optionText);
+                var unit = ExtractLinkNode(line);
+                LinkMermaidNode(from: unit.fromNode, to: unit.toNode, optionText: unit.optionText);
             }
         }
 
-        public static List<string> ExtractMermaidTagText(string text, MermaidTag mode)
+        public static (List<string> defineLines, List<string> linkLines) ExtractMermaidText(string[] mermaidLines)
         {
-            string pattern = "";
-            if (mode == MermaidTag.Define)  pattern = @"\[Define\](.*?)(?=\[Define\]|\[Link\]|\z)";
-            else if (mode == MermaidTag.Link)  pattern = @"\[Link\](.*?)(?=\[Define\]|\[Link\]|\z)";
+            var defineLines = new List<string>();
+            var linkLines = new List<string>();
 
-            MatchCollection matches = Regex.Matches(text, pattern, RegexOptions.Singleline);
-            var result = new List<string>();
-            
-            string newlinePattern = @"\r\n|\n|\r";
-            for (int i = 0; i < matches.Count; i++)
+            foreach (var line in mermaidLines)
             {
-                var lines = Regex.Split(matches[i].Groups[1].Value, newlinePattern);
-                var newLines = lines.Where(line => !string.IsNullOrWhiteSpace(line) && !line.TrimStart().StartsWith("#"));
-                result.AddRange(newLines);
+                var trimmedLine = line.Trim();
+
+                if (defineRegex.IsMatch(trimmedLine))
+                {
+                    defineLines.Add(trimmedLine);
+                }
+                else if (linkRegex.IsMatch(trimmedLine))
+                {
+                    linkLines.Add(trimmedLine);
+                }
+                else if (!string.IsNullOrEmpty(line) && line[0] != '#')
+                {
+                    throw new ArgumentException($"VN Mermaid Defeat : extra text ->「{trimmedLine}」");
+                }
             }
 
-            return result;
+            return (defineLines, linkLines);
         }
 
-        public static (string nodeName, string chapterName) ExtractDefineText(string text)
+        public static (string nodeName, string chapterName) ExtractDefineNode(string defineLine)
         {
-            string pattern = @"^(.*?)\[(.*?)\]$";
-            Match match = Regex.Match(text, pattern);
+            Match match = defineRegex.Match(defineLine);
 
             if (match.Success)
             {
-                string nodeName = match.Groups[1].Value.Trim();
-                string chapterName = match.Groups[2].Value.Trim();
+                string nodeName = match.Groups[1].Value;
+                string chapterName = match.Groups[2].Value;
 
-                if (string.IsNullOrWhiteSpace(nodeName)) throw new ArgumentException("nodeName 缺失");
-                if (string.IsNullOrWhiteSpace(chapterName)) throw new ArgumentException("chapterName 缺失");
+                if (string.IsNullOrWhiteSpace(nodeName) || string.IsNullOrWhiteSpace(chapterName))
+                {
+                    throw new ArgumentException($"VN Mermaid Defeat : extra define text ->「{defineLine}」");
+                }
 
                 return (nodeName, chapterName);
             }
             else
             {
-                throw new ArgumentException($"Defeat : extra define text ->{text}");
+                throw new ArgumentException($"VN Mermaid Defeat : extra define text ->「{defineLine}」");
             }
         }
 
-        public static (string fromNode, string toNode, string optionText) ExtractLinkText(string text)
+        public static (string fromNode, string optionText, string toNode) ExtractLinkNode(string linkLine)
         {
-            string pattern = @"^\s*(.*?)\s*-->\s*(.*?)\s*(?:\((.*?)\))?\s*$";
-            Match match = Regex.Match(text, pattern);
+            Match match = linkRegex.Match(linkLine);
 
             if (match.Success)
             {
-                string fromNode = match.Groups[1].Value.Trim();
-                string toNode = match.Groups[2].Value.Trim();
-                string optionText = match.Groups[3].Success ? match.Groups[3].Value.Trim() : ""; // 设置optionText为空字符串
+                // match.Groups 是匹配所使用的文本串
+                // Groups[1] 是 fromNode
+                // Groups[2] 是 |OptionText|
+                // Groups[3] 是 OptionText
+                // Groups[4] 是 toNode
+                string fromNode, toNode, optionText;
+                fromNode = match.Groups[1].Value;
+                toNode = match.Groups[^1].Value;
+                optionText = match.Groups[3].Value;
 
-                // 验证是否缺失任何一个部分，并抛出相应的异常
-                if (string.IsNullOrWhiteSpace(fromNode)) throw new ArgumentException("from节点缺失");
-                if (string.IsNullOrWhiteSpace(toNode)) throw new ArgumentException("to节点缺失");
+                if (string.IsNullOrEmpty(fromNode) || string.IsNullOrEmpty(toNode))
+                {
+                    throw new ArgumentException($"VN Mermaid Defeat : extra link text ->「{linkLine}」");
+                }
 
-                return (fromNode, toNode, optionText);
+                return (fromNode, optionText, toNode);
             }
             else
             {
-                throw new ArgumentException($"Defeat : extra link text ->「{text}」");
+                throw new ArgumentException($"VN Mermaid Defeat : extra link text ->「{linkLine}」");
             }
         }
     }
