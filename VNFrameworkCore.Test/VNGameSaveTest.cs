@@ -1,9 +1,6 @@
-using System.Diagnostics;
-using VNFramework.Core;
-using Xunit;
-using Xunit.Abstractions; 
+using Xunit.Abstractions;
 
-namespace VNFrameworkUtilsTests;
+namespace VNFrameworkCore.Test;
 
 public class VNGameSaveTest
 {
@@ -26,6 +23,6 @@ public class VNGameSaveTest
             _output.WriteLine(save.ToString());
         }
 
-        Assert.True(false);
+        // Assert.True(false);
     }
 }

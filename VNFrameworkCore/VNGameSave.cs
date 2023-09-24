@@ -16,15 +16,7 @@ namespace VNFramework.Core
                 .Select(match => ParseGameSaveItem(match.Groups[1].Value))
                 .ToArray();
 
-            var gameSaves = new GameSave[60];
-
-            foreach (var save in curGameSaves)
-            {
-                var index = save.SaveIndex;
-                gameSaves[index] = save;
-            }
-
-            return gameSaves;
+            return curGameSaves;
         }
 
         private static GameSave ParseGameSaveItem(string blockContent)
@@ -61,15 +53,7 @@ namespace VNFramework.Core
             {
                 if (gameSaves[i] != null && !string.IsNullOrWhiteSpace(gameSaves[i].SaveDate))
                 {
-                    sb.Append(@$"<|
-    [ save_index: {i} ]
-    [ save_date: {gameSaves[i].SaveDate} ]
-    [ mermaid_node: {gameSaves[i].MermaidNode} ]
-    [ script_index: {gameSaves[i].VNScriptIndex} ]
-    [ resume_pic: {gameSaves[i].ResumePic} ]
-    [ resume_text: {gameSaves[i].ResumeText} ]
-|>
-");
+                    sb.Append(gameSaves[i].ToString());
                 }
             }
 

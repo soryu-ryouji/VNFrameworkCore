@@ -44,7 +44,7 @@ namespace VNFramework.Core
             List<ChapterInfo> chapterInfoList = matches
                 .Select(match => ParseChapterInfo(match.Groups[1].Value))
                 .ToList();
-            
+
             return chapterInfoList;
         }
 

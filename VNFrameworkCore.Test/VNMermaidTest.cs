@@ -1,6 +1,4 @@
-using VNFramework.Core;
-
-namespace VNFrameworkUtilsTests;
+namespace VNFrameworkCore.Test;
 
 public class VNMermaidTest
 {

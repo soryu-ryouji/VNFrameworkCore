@@ -103,13 +103,15 @@ namespace VNFramework
 
         public override string ToString()
         {
-            return @$"Index: {ScriptIndex}
-Mermaid: {MermaidName}
-Bgm: {Bgm}
-Bgp: {Bgp}
-ChLeft: {ChLeft}
-ChRight: {ChRight}
-ChMid: {ChMid}";
+            return $"""
+                    Index: {ScriptIndex}
+                    Mermaid: {MermaidName}
+                    Bgm: {Bgm}
+                    Bgp: {Bgp}
+                    ChLeft: {ChLeft}
+                    ChRight: {ChRight}
+                    ChMid: {ChMid}
+                    """;
         }
     }
 
@@ -199,15 +201,16 @@ ChMid: {ChMid}";
 
         public override string ToString()
         {
-            var str = 
-$@"SaveIndex: {SaveIndex}
-SaveDate: {SaveDate}
-MermaidNode: {MermaidNode}
-VNScriptIndex: {VNScriptIndex}
-ResumePic: {ResumePic}
-ResumeText: {ResumeText}";
-
-            return str;
+            return $"""
+                    <|
+                        [ save_index: {SaveIndex} ]
+                        [ save_date: {SaveDate} ]
+                        [ mermaid_node: {MermaidNode} ]
+                        [ script_index: {VNScriptIndex} ]
+                        [ resume_pic: {ResumePic} ]
+                        [ resume_text: {ResumeText} ]
+                    |>
+                    """;
         }
     }
 }

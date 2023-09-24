@@ -1,9 +1,6 @@
-using System.Reflection;
-using VNFramework.Core;
-using Xunit;
-using Xunit.Abstractions; 
+using Xunit.Abstractions;
 
-namespace VNFrameworkUtilsTests;
+namespace VNFrameworkCore.Test;
 
 public class VNScriptCompilerTest
 {
