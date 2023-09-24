@@ -154,9 +154,12 @@ namespace VNFramework.Core
             var defineLines = new List<string>();
             var linkLines = new List<string>();
 
-            foreach (var line in mermaidLines)
+            for (int i = 0; i < mermaidLines.Length; i++)
             {
+                string line = mermaidLines[i];
                 var trimmedLine = line.Trim();
+
+                if (string.IsNullOrEmpty(trimmedLine)) continue;
 
                 if (defineRegex.IsMatch(trimmedLine))
                 {
@@ -168,7 +171,7 @@ namespace VNFramework.Core
                 }
                 else if (!string.IsNullOrEmpty(line) && line[0] != '#')
                 {
-                    throw new ArgumentException($"VN Mermaid Defeat : extra text ->「{trimmedLine}」");
+                    throw new ArgumentException($"VN Mermaid Defeat : line : {i} extra text ->「{trimmedLine}」");
                 }
             }
 

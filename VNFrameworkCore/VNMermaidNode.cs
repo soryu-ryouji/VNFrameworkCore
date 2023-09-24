@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace VNFramework.Core
 {
     public class MermaidNode

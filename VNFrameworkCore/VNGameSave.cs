@@ -5,7 +5,7 @@ using System;
 
 namespace VNFramework.Core
 {
-    class VNGameSave
+    public class VNGameSave
     {
         public static GameSave[] ParseGameSaveText(string gameSaveText)
         {

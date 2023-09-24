@@ -1,0 +1,16 @@
+<|
+    [ save_index: 0 ]
+    [ save_date: 2023-09-02 22:50:24 ]
+    [ mermaid_node: Prologue ]
+    [ script_index: 31 ]
+    [ resume_pic: 神社外_夜 ]
+    [ resume_text: 「神社？这是很久以前的事情了。」 ]
+|>
+<|
+    [ save_index: 1 ]
+    [ save_date: 2023-09-02 22:49:09 ]
+    [ mermaid_node: Prologue ]
+    [ script_index: 0 ]
+    [ resume_pic: 神社外_夜 ]
+    [ resume_text: 不......这里是我的家。 ]
+|>

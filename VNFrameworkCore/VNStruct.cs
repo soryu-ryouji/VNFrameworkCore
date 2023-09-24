@@ -155,12 +155,14 @@ ChMid: {ChMid}";
 
     public class ChapterInfo
     {
+        public string ShowName;
         public string MermaidName;
         public string ResumeText;
         public string ResumePic;
 
         public ChapterInfo()
         {
+            ShowName = "";
             MermaidName = "";
             ResumeText = "";
             ResumePic = "";
@@ -193,6 +195,19 @@ ChMid: {ChMid}";
             VNScriptIndex = 0;
             ResumePic = "";
             ResumeText = "";
+        }
+
+        public override string ToString()
+        {
+            var str = 
+$@"SaveIndex: {SaveIndex}
+SaveDate: {SaveDate}
+MermaidNode: {MermaidNode}
+VNScriptIndex: {VNScriptIndex}
+ResumePic: {ResumePic}
+ResumeText: {ResumeText}";
+
+            return str;
         }
     }
 }

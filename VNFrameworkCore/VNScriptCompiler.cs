@@ -54,7 +54,7 @@ namespace VNFramework.Core
             }
         }
 
-        public static PerformanceState GetPerformanceStateByIndex(string[] vnScript, int index, out VNScriptCompiler vnScriptCompiler)
+        public static PerformanceState GetPerformanceStateByIndex(string[] vnScript, int index)
         {
             var performanceState = new PerformanceState();
             var compiler = new VNScriptCompiler(vnScript);
@@ -103,7 +103,6 @@ namespace VNFramework.Core
             }
 
             performanceState.ScriptIndex = lastBlock;
-            vnScriptCompiler = compiler;
             return performanceState;
         }
 
